@@ -76,12 +76,24 @@ namespace cse210_student_csharp_Greed
     {
         public void initialize()
         {
-            Rectangle[] =  
+            int count = 0;
+            if (count == 10)
+            {
+
+                count = 0;
+            }
+            else
+            {
+                count += 1;
+            }
+            //Rectangle[] =  
         }
 
     }
-    public class Falling_objects
+    abstract public class Falling_objects
     {
+        public Vector2 Position { get; set; } = new Vector2(0, 0);
+        public Vector2 Velocity { get; set; } = new Vector2(0, 0);
         public Falling_objects()
         {
 
