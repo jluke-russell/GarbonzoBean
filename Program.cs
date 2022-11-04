@@ -42,6 +42,7 @@ namespace cse210_student_csharp_Greed
             Raylib.EndDrawing();
         }
         Raylib.CloseWindow();
+        }
     }
 
     // Move all movement and draw rectangle related objects into the movement. and the draw method to the class.
@@ -253,6 +254,4 @@ namespace cse210_student_csharp_Greed
         // spaceBar = shoot
         // shoot = |
     }  
-
-    }
 }
