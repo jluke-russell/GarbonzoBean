@@ -16,10 +16,13 @@ namespace cse210_student_csharp_Greed
         int RectangleSize = 15;
         int MovementSpeed = 4;
         int count = 0;
+        int score = 0;
         var Objects = new List<Falling_objects>();
+        Rectangle PlayerRectangle = new Rectangle(ScreenWidth - (RectangleSize * 2), ScreenHeight - (RectangleSize * 2), RectangleSize, RectangleSize);
 
-        Player player = new Player(ScreenHeight, ScreenWidth, MovementSpeed, RectangleSize);
-        Fall fall = new Fall(MovementSpeed, Objects, ScreenHeight, ScreenWidth, RectangleSize, count);
+
+        Player player = new Player(MovementSpeed, PlayerRectangle);
+        Fall fall = new Fall(MovementSpeed, Objects, ScreenHeight, ScreenWidth, RectangleSize, count, score);
 
         Raylib.InitWindow(ScreenWidth, ScreenHeight, "Greed");
         Raylib.SetTargetFPS(60);
@@ -29,14 +32,14 @@ namespace cse210_student_csharp_Greed
         {
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.BLACK);
-            Raylib.DrawText("Score: ", 12, 12, 20, Color.WHITE);
+
+            fall.newScore();
+            player.Input();
+            player.drawPlayer();
+            fall.Step(player.PlayerRectangle);
             
-            player.input();
-            fall.Step();
         
             Raylib.EndDrawing();
-
-
         }
         Raylib.CloseWindow();
     }
@@ -44,14 +47,14 @@ namespace cse210_student_csharp_Greed
     // Move all movement and draw rectangle related objects into the movement. and the draw method to the class.
     public class Player
     {
-        public Player(int ScreenHeight, int ScreenWidth, int MovementSpeed, int RectangleSize)
+        public Player(int MovementSpeed, Rectangle Player)
         {
-           PlayerRectangle = new Rectangle(ScreenWidth - (RectangleSize * 2), ScreenHeight - (RectangleSize * 2), RectangleSize, RectangleSize);
+           PlayerRectangle = Player;
            Speed = MovementSpeed;
         }
-        Rectangle PlayerRectangle;
+        public Rectangle PlayerRectangle;
         int Speed;
-        public void input()
+        public void Input()
         {
             if (Raylib.IsKeyDown(KeyboardKey.KEY_D)) 
             {
@@ -62,21 +65,16 @@ namespace cse210_student_csharp_Greed
             {
                 PlayerRectangle.x -= Speed;
             }
-            
-            drawPlayer();
         }
         public void drawPlayer()
         {
             Raylib.DrawRectangleRec(PlayerRectangle, Color.WHITE); 
         }
-    }
-    public class score
-    {
-
+        
     }
     public class Fall
     {
-        public Fall(int MovementSpeed, List<Falling_objects> Objects, int ScreenHeight, int ScreenWidth, int RectangleSize, int count)
+        public Fall(int MovementSpeed, List<Falling_objects> Objects, int ScreenHeight, int ScreenWidth, int RectangleSize, int count, int score)
         {
             Speed = MovementSpeed;
             objects = Objects; 
@@ -84,6 +82,7 @@ namespace cse210_student_csharp_Greed
             Width = ScreenWidth;
             Size = RectangleSize;
             Count = count;
+            Score = score;
         }
         int Speed;
         List<Falling_objects> objects;
@@ -91,9 +90,11 @@ namespace cse210_student_csharp_Greed
         int Width;
         int Size;
         int Count;
+        int Score;
 
 
-        public void Step()
+
+        public void Step(Rectangle Player)
         {
             var Random = new Random();
             int whichType = Random.Next(2);
@@ -121,6 +122,33 @@ namespace cse210_student_csharp_Greed
             {
                 obj.Move();
             }
+            // Check for Collisions
+            foreach (var obj in objects)
+            {
+                if(obj is Rock)
+                {
+                    
+                    Rock rock = (Rock)obj;
+                    if (Raylib.CheckCollisionRecs(rock.eachRectangle(), Player)) 
+                    {
+                        Console.WriteLine("Rock");
+                        subScore();
+                        objectsToRemove.Add(obj);
+                    }   
+                }
+                else if (obj is Gem)
+                {
+                    
+                    Gem gem = (Gem)obj;
+                    if (Raylib.CheckCollisionCircleRec(gem.Position, gem.Radius, Player)) 
+                    {
+                        Console.WriteLine("Gem");
+                        addScore();
+                        objectsToRemove.Add(obj);
+                    }  
+                }
+
+            }
             foreach (var obj in objects)
             {
                 if (obj.Position.Y > Height + 20)
@@ -130,30 +158,50 @@ namespace cse210_student_csharp_Greed
             }
             objects = objects.Except(objectsToRemove).ToList();
         }
+        public void addScore()
+        {
+            Score += 1;
+        }
+        public void subScore()
+        {
+            Score -= 1;
+        }
+        public void newScore()
+        {
+            int returnScore = Score;
+            Raylib.DrawText("Score: " + returnScore , 12, 12, 20, Color.WHITE);
+        }
         public void CreateObjects(int whichType, int randomY, Vector2 position, int Size)
         {
             switch (whichType) 
                 {
                 case 0:
-                    var rock = new Rock(Color.RED, Size);
+                    var rock = new Rock(GenerateColor(), Size);
                     rock.Position = position;
                     rock.Velocity = new Vector2(0, randomY);
                     objects.Add(rock);
                     break;
                 case 1:
-                    var gem = new Gem(Color.BLUE, Size / 2);
+                    var gem = new Gem(GenerateColor(), Size / 2);
                     gem.Position = position;
                     gem.Velocity = new Vector2(0, randomY);
                     objects.Add(gem);
                     break;
                 }
         }
-        
-
+        public Color GenerateColor()
+        {
+            var Random = new Random();
+            Color[] Colors = {Color.SKYBLUE, Color.BROWN, Color.BEIGE,Color.DARKPURPLE, Color.VIOLET, Color.PURPLE, Color.DARKBLUE, Color.BLUE, 
+                        Color.BLACK, Color.DARKGREEN, Color.LIME, Color.GREEN, Color.MAROON, Color.RED, Color.PINK, Color.ORANGE, Color.GOLD, Color.YELLOW,
+                        Color.DARKGRAY, Color.GRAY, Color.LIGHTGRAY, Color.BLANK, Color.MAGENTA, Color.RAYWHITE, Color.DARKBROWN, Color.WHITE}; 
+            var randomColorNumber = Random.Next(0, Colors.Length);
+            Color randomColor = Colors[randomColorNumber];
+            return randomColor;
+        }
     }
     public class Falling_objects
     {
-        
         public Vector2 Position { get; set; } = new Vector2(0, 0);
         public Vector2 Velocity { get; set; } = new Vector2(0, 0);
 
@@ -171,7 +219,6 @@ namespace cse210_student_csharp_Greed
     public class ColoredObject: Falling_objects 
     {
         public Color Color { get; set; }
-
         public ColoredObject(Color color) { Color = color; }
     }
     public class Rock: ColoredObject
@@ -182,6 +229,11 @@ namespace cse210_student_csharp_Greed
         }
         override public void Draw() {
             Raylib.DrawRectangleLines((int)Position.X, (int)Position.Y, Size, Size+(Size/3), Color);
+        }
+        public Rectangle eachRectangle()
+        {
+            Rectangle ownedRectangle = new Rectangle((int)Position.X, (int)Position.Y, Size, Size+(Size/3));
+            return ownedRectangle;
         }
     }
     public class Gem: ColoredObject
