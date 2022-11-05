@@ -35,8 +35,8 @@ namespace cse210_student_csharp_Greed
 
             fall.newScore();
             player.Input();
-            player.drawPlayer();
             fall.Step(player.PlayerRectangle);
+            player.drawPlayer();
             
         
             Raylib.EndDrawing();
@@ -128,11 +128,9 @@ namespace cse210_student_csharp_Greed
             {
                 if(obj is Rock)
                 {
-                    
                     Rock rock = (Rock)obj;
                     if (Raylib.CheckCollisionRecs(rock.eachRectangle(), Player)) 
                     {
-                        Console.WriteLine("Rock");
                         subScore();
                         objectsToRemove.Add(obj);
                     }   
@@ -143,7 +141,6 @@ namespace cse210_student_csharp_Greed
                     Gem gem = (Gem)obj;
                     if (Raylib.CheckCollisionCircleRec(gem.Position, gem.Radius, Player)) 
                     {
-                        Console.WriteLine("Gem");
                         addScore();
                         objectsToRemove.Add(obj);
                     }  
